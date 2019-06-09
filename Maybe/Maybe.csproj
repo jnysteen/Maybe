@@ -18,6 +18,7 @@
     <RepositoryType>Git</RepositoryType>
     <PackageTags>bloom filter count-min sketch skiplist probabilistic netstandard20</PackageTags>
     <PackageReleaseNotes>New support for count min sketch!</PackageReleaseNotes>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net20|AnyCPU'">
@@ -50,6 +51,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="MessagePack" Version="1.7.3.7" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
     <PackageReference Include="System.Memory" Version="4.5.2" />
   </ItemGroup>
 

@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Maybe", "Maybe\Maybe.csproj
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Maybe.Test", "Maybe.Test\Maybe.Test.csproj", "{E987735C-5184-4014-860E-725D72721ECC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Maybe.Benchmark", "Maybe.Benchmark\Maybe.Benchmark.csproj", "{E659064A-362D-44E6-9FC6-5C461683DD53}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{E987735C-5184-4014-860E-725D72721ECC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E987735C-5184-4014-860E-725D72721ECC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E987735C-5184-4014-860E-725D72721ECC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E659064A-362D-44E6-9FC6-5C461683DD53}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E659064A-362D-44E6-9FC6-5C461683DD53}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E659064A-362D-44E6-9FC6-5C461683DD53}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E659064A-362D-44E6-9FC6-5C461683DD53}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,20 +1,19 @@
-﻿using System;
-using System.ComponentModel;
+using System;
+using Maybe.BloomFilter;
 using Maybe.OptimizedBloomFilter.ByteConverters;
 using Maybe.Utilities;
 
-namespace Maybe.BloomFilter
+namespace Maybe.OptimizedBloomFilter
 {
     /// <summary>
-    /// Base class for bloom filter to contain some common member variables and hashing helper functions.
+    ///     An optimized version of the original <see cref="BloomFilterBase{T}"/>
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    [Serializable]
-    public abstract class BloomFilterBase<T> : IBloomFilter<T>
+    /// <typeparam name="T">Type of data that will be contained in the bloom filter.</typeparam>
+    public abstract class GenericOptimizedBloomFilterBase<T>
     {
         private readonly IByteConverter<T> _byteConverter;
         private readonly MurmurHash3 _hasher = new MurmurHash3();
-
+        
         /// <summary>
         /// The number of times an item should be hashed when being added to or checked for membership in the collection
         /// </summary>
@@ -32,7 +31,7 @@ namespace Maybe.BloomFilter
         /// <param name="acceptableErrorRate">The maximum rate of false positives you can accept. Must be a value between 0.00-1.00</param>
         /// <param name="byteConverter"></param>
         /// <returns>A new bloom filter configured appropriately for number of items and error rate</returns>
-        protected BloomFilterBase(int expectedItems, double acceptableErrorRate, IByteConverter<T> byteConverter)
+        protected GenericOptimizedBloomFilterBase(int expectedItems, double acceptableErrorRate, IByteConverter<T> byteConverter)
         {
             if (expectedItems <= 0) { throw new ArgumentException("Expected items must be at least 1.", nameof(expectedItems)); }
             if (acceptableErrorRate < 0 || acceptableErrorRate > 1) { throw new ArgumentException("Acceptable error rate must be between 0 and 1.", nameof(acceptableErrorRate)); }
@@ -51,7 +50,7 @@ namespace Maybe.BloomFilter
         /// <param name="bitArraySize">The number of bits that should be used internally to store items.</param>
         /// <param name="numberHashes">The number of times an input should be hashed before working against the internal bit array.</param>
         /// <param name="byteConverter"></param>
-        protected BloomFilterBase(int bitArraySize, int numberHashes, IByteConverter<T> byteConverter)
+        protected GenericOptimizedBloomFilterBase(int bitArraySize, int numberHashes, IByteConverter<T> byteConverter)
         {
             NumberHashes = numberHashes;
             _byteConverter = byteConverter;
@@ -88,14 +87,13 @@ namespace Maybe.BloomFilter
         /// </summary>
         /// <param name="item"></param>
         /// <param name="hashAction"></param>
-        protected void DoHashAction(T item, Action<int> hashAction)
+        protected virtual void DoHashAction(T item, Action<int> hashAction)
         {
             var bytes = item as byte[] ?? _byteConverter.ConvertToBytes(item);
-            var hashes = _hasher.GetHashes(bytes, NumberHashes, CollectionLength);
-            foreach (var hash in hashes)
-            {
-                hashAction(hash);
-            }
+            var hashes = _hasher.GetHashesOptimized(bytes, NumberHashes, CollectionLength);
+            
+            for (var i = 0; i < hashes.Length; i++)
+                hashAction(hashes[i]);
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using Maybe.OptimizedBloomFilter.ByteConverters;
 
 namespace Maybe.BloomFilter
 {
@@ -10,6 +11,7 @@ namespace Maybe.BloomFilter
     [Serializable]
     public class CountingBloomFilter<T> : BloomFilterBase<T>
     {
+        private readonly IByteConverter<T> _byteConverter;
         private readonly byte[] _collectionState;
 
         /// <summary>
@@ -17,8 +19,10 @@ namespace Maybe.BloomFilter
         /// </summary>
         /// <param name="arraySize">Size of the internal bit array to track items</param>
         /// <param name="numHashes">Number of times the input should be hashed before working with the bit array.</param>
-        protected CountingBloomFilter(int arraySize, int numHashes) : base(arraySize, numHashes)
+        /// <param name="byteConverter"></param>
+        protected CountingBloomFilter(int arraySize, int numHashes, IByteConverter<T> byteConverter) : base(arraySize, numHashes, byteConverter)
         {
+            _byteConverter = byteConverter;
             _collectionState = new byte[arraySize];
             for (var i = 0; i < _collectionState.Length; i++)
             {
@@ -32,8 +36,10 @@ namespace Maybe.BloomFilter
         /// </summary>
         /// <param name="expectedItems">Expected number of items for the bloom filter to hold</param>
         /// <param name="acceptableErrorRate">The maximum error rate for this counting bloom filter when items are below expected value</param>
-        public CountingBloomFilter(int expectedItems, double acceptableErrorRate) : base(expectedItems, acceptableErrorRate)
+        /// <param name="byteConverter"></param>
+        public CountingBloomFilter(int expectedItems, double acceptableErrorRate, IByteConverter<T> byteConverter) : base(expectedItems, acceptableErrorRate, byteConverter)
         {
+            _byteConverter = byteConverter;
             _collectionState = new byte[CollectionLength];
             for (var i = 0; i < _collectionState.Length; i++)
             {
@@ -50,10 +56,11 @@ namespace Maybe.BloomFilter
         /// </summary>
         /// <param name="expectedItems">The maximum number of items you expect to be in the counting bloom filter</param>
         /// <param name="acceptableErrorRate">The maximum rate of false positives you can accept. Must be a value between 0.00-1.00</param>
+        /// <param name="byteConverter"></param>
         /// <returns>A new bloom filter configured appropriately for number of items and error rate</returns>
-        public static CountingBloomFilter<T> Create(int expectedItems, double acceptableErrorRate)
+        public static CountingBloomFilter<T> Create(int expectedItems, double acceptableErrorRate, IByteConverter<T> byteConverter)
         {
-            return new CountingBloomFilter<T>(expectedItems, acceptableErrorRate);
+            return new CountingBloomFilter<T>(expectedItems, acceptableErrorRate, byteConverter);
         }
 
         /// <summary>

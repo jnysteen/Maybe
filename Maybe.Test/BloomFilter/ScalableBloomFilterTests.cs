@@ -2,17 +2,20 @@
 using System.IO;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
+using Maybe.OptimizedBloomFilter.ByteConverters;
 using Xunit;
 
 namespace Maybe.Test.BloomFilter
 {
     public class ScalableBloomFilterTests
     {
+        public static readonly IByteConverter<int> ByteConverter = new ByteConverterBinaryFormatter<int>();
+        
         [Fact]
         [Trait("Category", "Unit")]
         public void Contains_WhenItemHasBeenAdded_ShouldReturnTrue()
         {
-            var filter = new ScalableBloomFilter<int>(0.02);
+            var filter = new ScalableBloomFilter<int>(0.02, ByteConverter);
             filter.Add(42);
             Assert.True(filter.Contains(42));
         }
@@ -21,7 +24,7 @@ namespace Maybe.Test.BloomFilter
         [Trait("Category", "Unit")]
         public void Contains_WithFreshFilter_ShouldReturnFalse()
         {
-            var filter = new ScalableBloomFilter<int>(0.02);
+            var filter = new ScalableBloomFilter<int>(0.02, ByteConverter);
             Assert.False(filter.Contains(42));
         }
 
@@ -29,7 +32,7 @@ namespace Maybe.Test.BloomFilter
         [Trait("Category", "Unit")]
         public void NumberFilters_WithThreeTimesFirstCapacity_ShouldBeTwo()
         {
-            var filter = new ScalableBloomFilter<int>(0.02);
+            var filter = new ScalableBloomFilter<int>(0.02, ByteConverter);
             for (var i = 0; i < 3*ScalableBloomFilter<int>.MinimumCapacity; i++)
             {
                 filter.Add(i);
@@ -43,7 +46,7 @@ namespace Maybe.Test.BloomFilter
         {
             using (var stream = new MemoryStream())
             {
-                var filterOld = new ScalableBloomFilter<int>(0.02);
+                var filterOld = new ScalableBloomFilter<int>(0.02, ByteConverter);
                 filterOld.Add(42);
                 IFormatter formatter = new BinaryFormatter();
                 formatter.Serialize(stream, filterOld);

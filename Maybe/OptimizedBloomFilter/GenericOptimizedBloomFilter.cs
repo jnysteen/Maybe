@@ -1,27 +1,26 @@
-﻿using System;
 using System.Collections;
 using System.Linq;
+using Maybe.BloomFilter;
 using Maybe.OptimizedBloomFilter.ByteConverters;
 
-namespace Maybe.BloomFilter
+namespace Maybe.OptimizedBloomFilter
 {
     /// <summary>
-    /// Basic bloom filter collection
+    ///     An optimized version of the original <see cref="BloomFilter{T}"/>
     /// </summary>
     /// <typeparam name="T">Type of data that will be contained in the bloom filter.</typeparam>
-    [Serializable]
-    public class BloomFilter<T> : BloomFilterBase<T>
+    public class GenericOptimizedBloomFilter<T> : GenericOptimizedBloomFilterBase<T>
     {
         private readonly BitArray _collectionState;
 
         /// <inheritdoc />
-        protected BloomFilter(int bitArraySize, int numHashes, IByteConverter<T> byteConverter) : base(bitArraySize, numHashes, byteConverter)
+        protected GenericOptimizedBloomFilter(int bitArraySize, int numHashes, IByteConverter<T> byteConverter) : base(bitArraySize, numHashes, byteConverter)
         {
             _collectionState = new BitArray(bitArraySize, false);
         }
 
         /// <inheritdoc />
-        public BloomFilter(int expectedItems, double acceptableErrorRate, IByteConverter<T> byteConverter) : base(expectedItems, acceptableErrorRate, byteConverter)
+        public GenericOptimizedBloomFilter(int expectedItems, double acceptableErrorRate, IByteConverter<T> byteConverter) : base(expectedItems, acceptableErrorRate, byteConverter)
         {
             _collectionState = new BitArray(CollectionLength, false);
         }
@@ -38,9 +37,9 @@ namespace Maybe.BloomFilter
         /// <param name="acceptableErrorRate">The maximum rate of false positives you can accept. Must be a value between 0.00-1.00</param>
         /// <param name="byteConverter"></param>
         /// <returns>A new bloom filter configured appropriately for number of items and error rate</returns>
-        public static BloomFilter<T> Create(int expectedItems, double acceptableErrorRate, IByteConverter<T> byteConverter)
+        public static GenericOptimizedBloomFilter<T> Create(int expectedItems, double acceptableErrorRate, IByteConverter<T> byteConverter)
         {
-            return new BloomFilter<T>(expectedItems, acceptableErrorRate, byteConverter);
+            return new GenericOptimizedBloomFilter<T>(expectedItems, acceptableErrorRate, byteConverter);
         }
 
         /// <summary>

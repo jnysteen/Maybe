@@ -5,19 +5,22 @@ using System.Runtime.Serialization.Formatters.Binary;
 using FsCheck;
 using FsCheck.Xunit;
 using Maybe.BloomFilter;
+using Maybe.OptimizedBloomFilter.ByteConverters;
 using Xunit;
 
 namespace Maybe.Test.BloomFilter
 {
     public class CountingBloomFilterTests
     {
+        public static readonly IByteConverter<int> ByteConverter = new ByteConverterBinaryFormatter<int>();
+        
         [Property]
         [Trait("Category", "Property")]
         public Property Contains_WhenItemHasBeenAdded_ShouldReturnTrue()
         {
             return Prop.ForAll(Arb.Default.Int32(), testData =>
             {
-                var filter = new CountingBloomFilter<int>(50, 0.02);
+                var filter = new CountingBloomFilter<int>(50, 0.02, ByteConverter);
                 filter.Add(testData);
                 return filter.Contains(testData).ToProperty();
             });
@@ -29,7 +32,7 @@ namespace Maybe.Test.BloomFilter
         {
             return Prop.ForAll(Arb.Default.Int32(), testData =>
             {
-                var filter = new CountingBloomFilter<int>(50, 0.02);
+                var filter = new CountingBloomFilter<int>(50, 0.02, ByteConverter);
                 return (!filter.Contains(testData)).ToProperty();
             });
         }
@@ -40,7 +43,7 @@ namespace Maybe.Test.BloomFilter
         {
             return Prop.ForAll(Arb.From(Gen.Choose(1, 5000)), Arb.From(Gen.Choose(1, 99)), (stepRange, errorRate) =>
             {
-                var filter = new CountingBloomFilter<int>(stepRange, errorRate/100d);
+                var filter = new CountingBloomFilter<int>(stepRange, errorRate/100d, ByteConverter);
                 foreach (var num in Enumerable.Range(1, stepRange))
                 {
                     filter.Add(num);
@@ -57,7 +60,7 @@ namespace Maybe.Test.BloomFilter
         {
             return Prop.ForAll(Arb.Default.Int32(), testData =>
             {
-                var filter = new CountingBloomFilter<int>(100, 0.2);
+                var filter = new CountingBloomFilter<int>(100, 0.2, ByteConverter);
                 (!filter.Remove(testData)).ToProperty();
             });
         }
@@ -68,7 +71,7 @@ namespace Maybe.Test.BloomFilter
         {
             return Prop.ForAll(Arb.Default.Int32(), testData =>
             {
-                var filter = new CountingBloomFilter<int>(100, 0.2);
+                var filter = new CountingBloomFilter<int>(100, 0.2, ByteConverter);
                 filter.Add(testData);
                 return filter.Remove(testData).ToProperty();
             });
@@ -80,7 +83,7 @@ namespace Maybe.Test.BloomFilter
         {
             return Prop.ForAll(Arb.Default.Int32(), testData =>
             {
-                var filter = new CountingBloomFilter<int>(100, 0.2);
+                var filter = new CountingBloomFilter<int>(100, 0.2, ByteConverter);
                 filter.Add(testData);
                 filter.Remove(testData);
                 return (!filter.Remove(testData)).ToProperty();
@@ -91,7 +94,7 @@ namespace Maybe.Test.BloomFilter
         [Trait("Category", "Unit")]
         public void FillRatio_WithNewFilter_ShouldBeZero()
         {
-            var filter = new CountingBloomFilter<int>(1000, 0.05);
+            var filter = new CountingBloomFilter<int>(1000, 0.05, ByteConverter);
             Assert.Equal(0d, filter.FillRatio);
         }
 
@@ -102,7 +105,7 @@ namespace Maybe.Test.BloomFilter
             return Prop.ForAll(Arb.Default.Int32(), Arb.From(Gen.Choose(1, 10000)), Arb.From(Gen.Choose(1, 99)), (testData, bitArraySize, errorRate) =>
             {
                 var realErrorRate = (int) (errorRate / 100d);
-                var filter = new MyTestBloomFilter<int>(bitArraySize, realErrorRate);
+                var filter = new MyTestBloomFilter<int>(bitArraySize, realErrorRate, ByteConverter);
                 filter.Add(testData);
                 return (realErrorRate / bitArraySize == filter.FillRatio).ToProperty();
             });
@@ -112,7 +115,7 @@ namespace Maybe.Test.BloomFilter
         [Trait("Category", "Unit")]
         public void Add_WithCounterAtMaxValue_ShouldRemainConstant()
         {
-            var filter = new CountingBloomFilter<int>(50, 0.01);
+            var filter = new CountingBloomFilter<int>(50, 0.01, ByteConverter);
             while(filter.CounterAt(42) < byte.MaxValue)
             {
                 filter.Add(42);
@@ -127,7 +130,7 @@ namespace Maybe.Test.BloomFilter
         {
             return Prop.ForAll(Arb.Default.Int32(), testData =>
             {
-                var filter = new CountingBloomFilter<int>(50, 0.02);
+                var filter = new CountingBloomFilter<int>(50, 0.02, ByteConverter);
                 filter.Add(testData);
                 (filter.AddAndCheck(testData)).ToProperty();
             });
@@ -139,7 +142,7 @@ namespace Maybe.Test.BloomFilter
         {
             return Prop.ForAll(Arb.Default.Int32(), testData =>
             {
-                var filter = new CountingBloomFilter<int>(50, 0.02);
+                var filter = new CountingBloomFilter<int>(50, 0.02, ByteConverter);
                 (filter.AddAndCheck(testData)).ToProperty();
             });
         }
@@ -150,7 +153,7 @@ namespace Maybe.Test.BloomFilter
         {
             using (var stream = new MemoryStream())
             {
-                var filterOld = new CountingBloomFilter<int>(50, 0.02);
+                var filterOld = new CountingBloomFilter<int>(50, 0.02, ByteConverter);
                 filterOld.Add(42);
                 IFormatter formatter = new BinaryFormatter();
                 formatter.Serialize(stream, filterOld);
@@ -163,8 +166,8 @@ namespace Maybe.Test.BloomFilter
 
         private class MyTestBloomFilter<T> : CountingBloomFilter<T>
         {
-            public MyTestBloomFilter(int bitArraySize, int numHashes)
-                : base(bitArraySize, numHashes)
+            public MyTestBloomFilter(int bitArraySize, int numHashes, IByteConverter<T> byteConverter)
+                : base(bitArraySize, numHashes, byteConverter)
             {
 
             }

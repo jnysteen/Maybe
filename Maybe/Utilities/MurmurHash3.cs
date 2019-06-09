@@ -23,6 +23,28 @@ namespace Maybe.Utilities
                 yield return Math.Abs((primaryHash + i * secondaryHash) % maxHashValue);
             }
         }
+        
+        /// <summary>
+        /// Uses Dillinger and Manolios algorithm to calculate many hashes from 2 main hash functions (built-in .NET hash and Murmur3)
+        /// </summary>
+        /// <param name="item">Item to hash</param>
+        /// <param name="numHashes">Desired number of hashes to computer</param>
+        /// <param name="maxHashValue">Maximum value that will be returned; modulus is used to limit results</param>
+        /// <returns></returns>
+        public int[] GetHashesOptimized(byte[] item, int numHashes, int maxHashValue)
+        {
+            var primaryHash = Hash(item, 293);
+            var secondaryHash = Hash(item, 697);
+
+            var hashes = new int[numHashes];
+
+            for (var i = 0; i < numHashes; i++)
+            {
+                hashes[i] = Math.Abs((primaryHash + i * secondaryHash) % maxHashValue);
+            }
+
+            return hashes;
+        }
 
         /// <summary>
         /// Maps a stream of data to an integer hash
