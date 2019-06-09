@@ -44,20 +44,6 @@ namespace Maybe.Benchmark.ByteSerialization
             GeneralSetup(byteConverter, ItemsToInsert);
         }
         
-        [GlobalSetup(Target = nameof(MessagePackBenchmark))]
-        public void Setup_MessagePack()
-        {
-            var byteConverter = new ByteConverterMessagePack<string>();
-            GeneralSetup(byteConverter, ItemsToInsert);
-        }
-        
-        [GlobalSetup(Target = nameof(MarshalBenchmark))]
-        public void Setup_Marshal()
-        {
-            var byteConverter = new ByteConverterStringMarshal();
-            GeneralSetup(byteConverter, ItemsToInsert);
-        }
-        
         [Benchmark(Description = "BinaryFormatter", Baseline = true)]
         public void BinaryFormatterBenchmark()
         {
@@ -65,6 +51,13 @@ namespace Maybe.Benchmark.ByteSerialization
             {
                 var contains = _bloomFilter.Contains($"string-{i+1}");
             }
+        }
+        
+        [GlobalSetup(Target = nameof(MessagePackBenchmark))]
+        public void Setup_MessagePack()
+        {
+            var byteConverter = new ByteConverterMessagePack<string>();
+            GeneralSetup(byteConverter, ItemsToInsert);
         }
         
         [Benchmark(Description = "MessagePack")]
@@ -76,8 +69,31 @@ namespace Maybe.Benchmark.ByteSerialization
             }
         }
         
+        [GlobalSetup(Target = nameof(MarshalBenchmark))]
+        public void Setup_Marshal()
+        {
+            var byteConverter = new ByteConverterStringMarshal();
+            GeneralSetup(byteConverter, ItemsToInsert);
+        }
+        
         [Benchmark(Description = "Marshal")]
         public void MarshalBenchmark()
+        {
+            for (int i = 0; i < ItemsToInsert; i++)
+            {
+                var contains = _bloomFilter.Contains($"string-{i+1}");
+            }
+        }
+        
+        [GlobalSetup(Target = nameof(JsonBenchmark))]
+        public void Setup_Json()
+        {
+            var byteConverter = new ByteConverterJson<string>();
+            GeneralSetup(byteConverter, ItemsToInsert);
+        }
+        
+        [Benchmark(Description = "JSON")]
+        public void JsonBenchmark()
         {
             for (int i = 0; i < ItemsToInsert; i++)
             {

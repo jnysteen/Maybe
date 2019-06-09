@@ -20,19 +20,84 @@ namespace Maybe.Benchmark.Contains
     [CsvExporter(CsvSeparator.Semicolon), RPlotExporter]
     public class ScalableBloomFilterContainsBenchmarker
     {
-        private ScalableBloomFilter<string> _regularBloomFilter;
-        private GenericOptimizedScalableBloomFilter<string> _genericOptimizedBloomFilter;
-        private StringOptimizedScalableBloomFilter _stringOptimizedBloomFilter;
-        private StringOptimizedBloomfilter _stringOptimizedNonScalableBloomFilter;
+        private ScalableBloomFilter<string> _regularScalableBloomFilter;
+        private GenericOptimizedScalableBloomFilter<string> _genericOptimizedScalableBloomFilter;
+        private StringOptimizedScalableBloomFilter _stringOptimizedScalableBloomFilter;
         private HashSet<string> _hashSet;
         private static readonly IByteConverter<string> ByteConverter = new ByteConverterBinaryFormatter<string>();
 
-        [Params(1000)]
+        [Params(1000, 10000, 50000)]
         public int ItemsToInsert { get; set; }
 
         [Params(.02)]
         public double MaximumErrorRate { get; set; }
 
+        
+        [GlobalSetup(Target = nameof(CheckIfContainsItem_ScalableBloomFilter))]
+        public void Setup_ScalableBloomFilter()
+        {
+            _regularScalableBloomFilter = new ScalableBloomFilter<string>(MaximumErrorRate, ByteConverter);
+
+            for (var i = 0; i < ItemsToInsert; i++)
+            {
+                var s = $"string-{i + 1}";
+                _regularScalableBloomFilter.Add(s);
+            }
+        }
+        
+        [Benchmark(Description = "ScalableBloomFilter")]
+        public void CheckIfContainsItem_ScalableBloomFilter()
+        {
+            for (int i = 0; i < ItemsToInsert; i++)
+            {
+                var contains = _regularScalableBloomFilter.Contains($"string-{i+1}");
+            }
+        }     
+        
+        [GlobalSetup(Target = nameof(CheckIfContainsItem_GenericOptimizedScalableBloomFilter))]
+        public void Setup_GenericOptimizedScalableBloomFilter()
+        {
+            _genericOptimizedScalableBloomFilter = new GenericOptimizedScalableBloomFilter<string>(MaximumErrorRate, ByteConverter);
+
+            for (var i = 0; i < ItemsToInsert; i++)
+            {
+                var s = $"string-{i + 1}";
+                _genericOptimizedScalableBloomFilter.Add(s);
+            }
+        }
+        
+        [Benchmark(Description = "GenericOptimizedScalableBloomFilter")]
+        public void CheckIfContainsItem_GenericOptimizedScalableBloomFilter()
+        {
+            for (int i = 0; i < ItemsToInsert; i++)
+            {
+                var contains = _genericOptimizedScalableBloomFilter.Contains($"string-{i+1}");
+            }
+        }  
+        
+        [GlobalSetup(Target = nameof(CheckIfContainsItem_StringOptimizedScalableBloomFilter))]
+        public void Setup_StringOptimizedScalableBloomFilter()
+        {
+            var byteConverter = new ByteConverterStringMarshal();
+            _stringOptimizedScalableBloomFilter = new StringOptimizedScalableBloomFilter(MaximumErrorRate, byteConverter);
+
+            for (var i = 0; i < ItemsToInsert; i++)
+            {
+                var s = $"string-{i + 1}";
+                _stringOptimizedScalableBloomFilter.Add(s);
+            }
+        }
+        
+        [Benchmark(Description = "StringOptimizedScalableBloomFilter")]
+        public void CheckIfContainsItem_StringOptimizedScalableBloomFilter()
+        {
+            for (int i = 0; i < ItemsToInsert; i++)
+            {
+                var contains = _stringOptimizedScalableBloomFilter.Contains($"string-{i+1}");
+            }
+        }
+        
+        
         [GlobalSetup(Target = nameof(CheckIfContainsItem_HashSet))]
         public void Setup_HashSet()
         {
@@ -45,56 +110,6 @@ namespace Maybe.Benchmark.Contains
             }
         }
         
-        [GlobalSetup(Target = nameof(CheckIfContainsItem_RegularFilter))]
-        public void Setup_RegularFilter()
-        {
-            _regularBloomFilter = new ScalableBloomFilter<string>(MaximumErrorRate, ByteConverter);
-
-            for (var i = 0; i < ItemsToInsert; i++)
-            {
-                var s = $"string-{i + 1}";
-                _regularBloomFilter.Add(s);
-            }
-        }
-        
-        [GlobalSetup(Target = nameof(CheckIfContainsItem_OptimizedFilter))]
-        public void Setup_OptimizedFilter()
-        {
-            _genericOptimizedBloomFilter = new GenericOptimizedScalableBloomFilter<string>(MaximumErrorRate, ByteConverter);
-
-            for (var i = 0; i < ItemsToInsert; i++)
-            {
-                var s = $"string-{i + 1}";
-                _genericOptimizedBloomFilter.Add(s);
-            }
-        }
-        
-        [GlobalSetup(Target = nameof(CheckIfContainsItem_StringOptimizedFilter))]
-        public void Setup_StringOptimizedFilter()
-        {
-            var byteConverter = new ByteConverterStringMarshal();
-            _stringOptimizedBloomFilter = new StringOptimizedScalableBloomFilter(MaximumErrorRate, byteConverter);
-
-            for (var i = 0; i < ItemsToInsert; i++)
-            {
-                var s = $"string-{i + 1}";
-                _stringOptimizedBloomFilter.Add(s);
-            }
-        }
-        
-        [GlobalSetup(Target = nameof(CheckIfContainsItem_StringOptimizedNonScalableFilter))]
-        public void Setup_StringOptimizedNonScalableFilter()
-        {
-            var byteConverter = new ByteConverterStringMarshal();
-            _stringOptimizedNonScalableBloomFilter = new StringOptimizedBloomfilter(ItemsToInsert, MaximumErrorRate, byteConverter);
-
-            for (var i = 0; i < ItemsToInsert; i++)
-            {
-                var s = $"string-{i + 1}";
-                _stringOptimizedNonScalableBloomFilter.Add(s);
-            }
-        }
-        
         [Benchmark(Baseline = true, Description = "HashSet")]
         public void CheckIfContainsItem_HashSet()
         {
@@ -103,41 +118,5 @@ namespace Maybe.Benchmark.Contains
                 var contains = _hashSet.Contains($"string-{i+1}");
             }
         }     
-        
-        [Benchmark(Description = "Regular filter")]
-        public void CheckIfContainsItem_RegularFilter()
-        {
-            for (int i = 0; i < ItemsToInsert; i++)
-            {
-                var contains = _regularBloomFilter.Contains($"string-{i+1}");
-            }
-        }     
-        
-        [Benchmark(Description = "Optimized filter")]
-        public void CheckIfContainsItem_OptimizedFilter()
-        {
-            for (int i = 0; i < ItemsToInsert; i++)
-            {
-                var contains = _genericOptimizedBloomFilter.Contains($"string-{i+1}");
-            }
-        }     
-        
-        [Benchmark(Description = "String optimized filter")]
-        public void CheckIfContainsItem_StringOptimizedFilter()
-        {
-            for (int i = 0; i < ItemsToInsert; i++)
-            {
-                var contains = _stringOptimizedBloomFilter.Contains($"string-{i+1}");
-            }
-        }
-        
-        [Benchmark(Description = "String optimized, non-scalable filter")]
-        public void CheckIfContainsItem_StringOptimizedNonScalableFilter()
-        {
-            for (int i = 0; i < ItemsToInsert; i++)
-            {
-                var contains = _stringOptimizedNonScalableBloomFilter.Contains($"string-{i+1}");
-            }
-        }   
     }
 }

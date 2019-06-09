@@ -55,13 +55,6 @@ namespace Maybe.Benchmark.ByteSerialization
             GeneralSetup(byteConverter);
         }
         
-        [GlobalSetup(Target = nameof(MessagePackBenchmark))]
-        public void Setup_MessagePack()
-        {
-            var byteConverter = new ByteConverterMessagePack<ComplexType>();
-            GeneralSetup(byteConverter);
-        }
-        
         [Benchmark(Description = "BinaryFormatter", Baseline = true)]
         public void BinaryFormatterBenchmark()
         {
@@ -71,8 +64,33 @@ namespace Maybe.Benchmark.ByteSerialization
             }
         }
         
+        
+        [GlobalSetup(Target = nameof(MessagePackBenchmark))]
+        public void Setup_MessagePack()
+        {
+            var byteConverter = new ByteConverterMessagePack<ComplexType>();
+            GeneralSetup(byteConverter);
+        }
+        
         [Benchmark(Description = "MessagePack")]
         public void MessagePackBenchmark()
+        {
+            foreach (var complexType in CreateComplexTypes())
+            {
+                var contains = _bloomFilter.Contains(complexType);
+            }
+        }
+        
+        
+        [GlobalSetup(Target = nameof(JsonBenchmark))]
+        public void Setup_Json()
+        {
+            var byteConverter = new ByteConverterJson<ComplexType>();
+            GeneralSetup(byteConverter);
+        }
+        
+        [Benchmark(Description = "JSON")]
+        public void JsonBenchmark()
         {
             foreach (var complexType in CreateComplexTypes())
             {
